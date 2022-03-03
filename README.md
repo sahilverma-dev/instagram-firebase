@@ -1,6 +1,6 @@
 # Instagram Firebase
 
-An Instgram Clone made up with Firebase and Firebase.
+An Instgram Clone made up with React JS and Firebase 9.
 
 ## Live Website
 
@@ -28,7 +28,7 @@ https://instagram-firebase.netlify.app/
 
 ## Tech Stack
 
-React, Firebase, TailwindCSS
+React, Firebase 9, TailwindCSS
 
 ## Feedback
 
