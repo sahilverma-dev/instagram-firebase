@@ -25,7 +25,7 @@ const Stories = () => {
           <StoriyCard
             key={index}
             username={item?.username}
-            image={item?.image}
+            image={item?.photoURL}
           />
         ))}
       </div>

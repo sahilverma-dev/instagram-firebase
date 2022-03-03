@@ -343,7 +343,7 @@ const Profile = () => {
                   layout
                   className="grid grid-cols-3 md:gap-8 gap-1 md:p-2 p-1"
                 >
-                  {posts?.map((post, index) => (
+                  {posts?.reverse().map((post, index) => (
                     <ProfilePostCard key={index} post={post} />
                   ))}
                 </motion.div>

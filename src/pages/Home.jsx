@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Stories from "../components/Stories";
 import Footer from "../components/Footer";
+import { FakeUsers } from "../constants/fakeData";
 
 const Home = () => {
   const { user } = useContext(AuthContext);
@@ -119,7 +120,7 @@ const Home = () => {
             </div>
           </div>
           <div>
-            {suggestUsers?.map((item, index) => (
+            {FakeUsers?.slice(1, 10).map((item, index) => (
               <div
                 className="flex items-center  justify-between my-2"
                 key={index}
@@ -139,7 +140,7 @@ const Home = () => {
                     >
                       {item?.username}
                     </Link>
-                    <p className="text-[10px] text-gray-500">asdfasfs</p>
+                    <p className="text-[10px] text-gray-500">{item.name}</p>
                   </div>
                 </div>
                 <Link
