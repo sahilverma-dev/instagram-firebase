@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background-color: #fafafa;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+img {
+  display: block;
+  object-fit: cover !important;
+}
+
+.lazy-load-image-background {
+  display: block !important;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
