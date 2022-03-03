@@ -5,11 +5,14 @@ import { firestore } from "../firebase/config";
 import Header from "../components/Header";
 import ProfilePostCard from "../components/ProfilePostCard";
 import { AiOutlineSearch as SearchIcon } from "react-icons/ai";
+import Loading from "../components/Loading";
 
 const Explore = () => {
   const [posts, setposts] = useState([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       const res = await getDocs(collection(firestore, "posts"));
       const posts = res?.docs?.map((doc) => ({
         ...doc.data(),
@@ -17,6 +20,7 @@ const Explore = () => {
       }));
       //   console.log(posts);
       setposts(posts);
+      setLoading(false);
     };
     getData();
   }, []);
@@ -38,7 +42,13 @@ const Explore = () => {
             </form>
           </div>
         </div>
-        {posts?.length === 0 && (
+        {loading && (
+          <div className="flex items-center justify-center h-screen">
+            <Loading />
+          </div>
+        )}
+
+        {posts?.length === 0 && !loading && (
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">No posts yet</div>
           </div>

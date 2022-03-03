@@ -30,13 +30,13 @@ const ProfilePostCard = ({ post, span }) => {
                 <div className="flex items-center">
                   <HeartIcon />
                   <span className="ml-2">
-                    {nFormatter(post?.likedBy?.length)}
+                    {nFormatter(post?.likedBy?.length || 0)}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <CommentIcon />
                   <span className="ml-2">
-                    {post?.comments?.toLocaleString()}
+                    {post?.comments?.toLocaleString() || 0}
                   </span>
                 </div>
               </div>
