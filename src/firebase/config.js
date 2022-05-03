@@ -6,12 +6,7 @@ import { getStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDw4iLp7KAUsDetyo0aTdYmHmR4DgFMXHs",
-  authDomain: "instagram-clone-28771.firebaseapp.com",
-  projectId: "instagram-clone-28771",
-  storageBucket: "instagram-clone-28771.appspot.com",
-  messagingSenderId: "111989369370",
-  appId: "1:111989369370:web:45754427e792b855c8bfa3",
+  // your firebase config here
 };
 
 const app = initializeApp(firebaseConfig);

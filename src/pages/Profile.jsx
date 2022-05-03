@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 // firebase
 import {
@@ -13,7 +13,6 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
   query,
   setDoc,
@@ -29,7 +28,6 @@ import Footer from "../components/Footer";
 
 // icons
 import { MdVerified as VerifiedIcon } from "react-icons/md";
-import { IoMdLogOut as LogoutIcon } from "react-icons/io";
 import { MdAddAPhoto as EditProfileIcon } from "react-icons/md";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import NotFound from "../components/NotFound";
@@ -41,10 +39,9 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState([]);
   const [postIds, setPostIds] = useState([]);
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [profileUser, setProfileUser] = useState(null);
   const profilePic = useRef();
-  const [image, setImage] = useState(null);
   const [noUser, setNoUser] = useState(true);
   const navigate = useNavigate();
 
@@ -142,7 +139,7 @@ const Profile = () => {
   return (
     <div>
       <Header />
-      <div className="mt-16">
+      <div className="mt-16 min-h-screen">
         {profileUser && (
           <main className="bg-gray-100 bg-opacity-25">
             <div className="lg:max-w-5xl lg:mx-auto mb-8">
@@ -198,7 +195,6 @@ const Profile = () => {
                               }
                             );
                           }}
-                          name="profile-image"
                         />
                       </div>
                     )}
@@ -287,6 +283,8 @@ const Profile = () => {
                       <a
                         href={`https://${profileUser?.link}`}
                         target="_blank"
+                        without
+                        rel="noreferrer"
                         className="font-semibold text-blue-800"
                       >
                         {profileUser?.link}

@@ -4,6 +4,10 @@ import { Link, NavLink } from "react-router-dom";
 // uuid
 import { v4 as uuid } from "uuid";
 
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
+
 // icons
 import { MdHomeFilled as HomeIcon } from "react-icons/md";
 import { RiMessengerLine as ChatIcon } from "react-icons/ri";
@@ -31,6 +35,8 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { signOut } from "firebase/auth";
+import Swiper, { Pagination } from "swiper";
+import { SwiperSlide } from "swiper/react";
 
 const Header = () => {
   const { user, logout } = useContext(AuthContext);
@@ -38,7 +44,7 @@ const Header = () => {
   const [percentage, setPercentage] = useState(0);
   const [caption, setCaption] = useState("");
   const [disabled, setDisabled] = useState(true);
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState(null);
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,9 +52,8 @@ const Header = () => {
   const uploadImage = (e) => {
     e.preventDefault();
     const storageRef = ref(storage, `users/${user?.uid}/posts/${uuid()}`);
-
-    const uploadTask = uploadBytesResumable(storageRef, image);
-    uploadTask.on(
+    const uploadSingleImage = uploadBytesResumable(storageRef, images[0]);
+    uploadSingleImage.on(
       "state_changed",
       (snap) => {
         setUploading(true);
@@ -56,38 +61,40 @@ const Header = () => {
       },
       (err) => console.log(err),
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          console.log("File available at", downloadURL);
-          const postDoc = await addDoc(collection(firestore, "posts"), {
-            caption,
-            createdAt: serverTimestamp(),
-            singleMedia: { src: downloadURL },
-            user: {
-              fullname: user?.displayName,
-              username: user?.username,
-              photoURL: user?.photoURL,
-              uid: user?.uid,
-            },
-          });
-          console.log(postDoc?.id);
-          setDoc(
-            doc(firestore, `user/${user?.uid}`),
-            {
-              posts: arrayUnion(postDoc.id),
-            },
-            {
-              merge: true,
-            }
-          ).then(() => {
-            setModelOpen(false);
-            setUploading(false);
-            setUploadComplete(true);
-            setCaption("");
-            setImage(null);
-            setUploadComplete(false);
-            setPercentage(0);
-          });
-        });
+        getDownloadURL(uploadSingleImage.snapshot.ref).then(
+          async (downloadURL) => {
+            console.log("File available at", downloadURL);
+            const postDoc = await addDoc(collection(firestore, "posts"), {
+              caption,
+              createdAt: serverTimestamp(),
+              singleMedia: { src: downloadURL },
+              user: {
+                fullname: user?.displayName,
+                username: user?.username,
+                photoURL: user?.photoURL,
+                uid: user?.uid,
+              },
+            });
+            console.log(postDoc?.id);
+            setDoc(
+              doc(firestore, `user/${user?.uid}`),
+              {
+                posts: arrayUnion(postDoc.id),
+              },
+              {
+                merge: true,
+              }
+            ).then(() => {
+              setModelOpen(false);
+              setUploading(false);
+              setUploadComplete(true);
+              setCaption("");
+              setImages(null);
+              setUploadComplete(false);
+              setPercentage(0);
+            });
+          }
+        );
       }
     );
   };
@@ -118,92 +125,111 @@ const Header = () => {
               </form>
             </div>
           </div>
-          <div className="flex items-center text-slate-800 text-2xl gap-3">
-            <NavLink to="/">
-              <HomeIcon />
-            </NavLink>
-            <div>
-              <ChatIcon />
-            </div>
-            <button onClick={() => setModelOpen(true)}>
-              <AddPostIcon />
-            </button>
-            <NavLink to="/explore">
-              <ExploreIcon size={20} />
-            </NavLink>
-            <div>
-              <HeartIcon />
-            </div>
-            {user ? (
-              <div
-                className="relative cursor-pointer"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                <img
-                  className="h-6 md:border-[1px] border-slate-900 rounded-full aspect-square"
-                  // src={
-                  //   "https://lh3.googleusercontent.com/a-/AOh14Gh94MS2OYdnk63M-e_5MLwokYLufFvBMzlHp93wtg=s96-c"
-                  // }
-                  src={user?.photoURL}
-                  alt={user?.name}
-                />
-                {menuOpen && (
-                  <div className="absolute z-30 -bottom-5 w-[200px] right-0 translate-y-full bg-white shadow rounded text-xs">
-                    <ul className="flex flex-col p-3 justify-center gap-2">
-                      <li onClick={() => setMenuOpen(!menuOpen)}>
-                        <Link
-                          to={`/${user?.username}`}
-                          className="flex items-center gap-1"
+          {user ? (
+            <>
+              <div className="flex items-center text-slate-800 text-2xl gap-3">
+                <NavLink to="/">
+                  <HomeIcon />
+                </NavLink>
+                <div>
+                  <ChatIcon />
+                </div>
+                <button onClick={() => setModelOpen(true)}>
+                  <AddPostIcon />
+                </button>
+                <NavLink to="/explore">
+                  <ExploreIcon size={20} />
+                </NavLink>
+                <div>
+                  <HeartIcon />
+                </div>
+                {user ? (
+                  <div
+                    className="relative cursor-pointer"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                  >
+                    <img
+                      className="h-6 md:border-[1px] border-slate-900 rounded-full aspect-square"
+                      // src={
+                      //   "https://lh3.googleusercontent.com/a-/AOh14Gh94MS2OYdnk63M-e_5MLwokYLufFvBMzlHp93wtg=s96-c"
+                      // }
+                      src={user?.photoURL}
+                      alt={user?.name}
+                    />
+                    {menuOpen && (
+                      <div className="absolute z-30 -bottom-5 w-[200px] right-0 translate-y-full bg-white shadow rounded text-xs">
+                        <ul className="flex flex-col p-3 justify-center gap-2">
+                          <li onClick={() => setMenuOpen(!menuOpen)}>
+                            <Link
+                              to={`/${user?.username}`}
+                              className="flex items-center gap-1"
+                            >
+                              <div>
+                                <ProfileIcon />
+                              </div>
+                              <div>Profile</div>
+                            </Link>
+                          </li>
+                          <li onClick={() => setMenuOpen(!menuOpen)}>
+                            <div className="flex items-center gap-1">
+                              <div>
+                                <SavedIcon />
+                              </div>
+                              <div>Saved</div>
+                            </div>
+                          </li>
+                          <li onClick={() => setMenuOpen(!menuOpen)}>
+                            <div className="flex items-center gap-1">
+                              <div>
+                                <SettingIcon />
+                              </div>
+                              <div>Setting</div>
+                            </div>
+                          </li>
+                          <li onClick={() => setMenuOpen(!menuOpen)}>
+                            <div className="flex items-center gap-1">
+                              <div>
+                                <SwitchIcon />
+                              </div>
+                              <div>Switch</div>
+                            </div>
+                          </li>
+                        </ul>
+                        <button
+                          onClick={() => {
+                            signOut(auth);
+                          }}
+                          type="button"
+                          className="border-t-2 p-2 text-left w-full"
                         >
-                          <div>
-                            <ProfileIcon />
-                          </div>
-                          <div>Profile</div>
-                        </Link>
-                      </li>
-                      <li onClick={() => setMenuOpen(!menuOpen)}>
-                        <div className="flex items-center gap-1">
-                          <div>
-                            <SavedIcon />
-                          </div>
-                          <div>Saved</div>
-                        </div>
-                      </li>
-                      <li onClick={() => setMenuOpen(!menuOpen)}>
-                        <div className="flex items-center gap-1">
-                          <div>
-                            <SettingIcon />
-                          </div>
-                          <div>Setting</div>
-                        </div>
-                      </li>
-                      <li onClick={() => setMenuOpen(!menuOpen)}>
-                        <div className="flex items-center gap-1">
-                          <div>
-                            <SwitchIcon />
-                          </div>
-                          <div>Switch</div>
-                        </div>
-                      </li>
-                    </ul>
-                    <button
-                      onClick={() => {
-                        signOut(auth);
-                      }}
-                      type="button"
-                      className="border-t-2 p-2 text-left w-full"
-                    >
-                      Logout
-                    </button>
+                          Logout
+                        </button>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <NavLink to="/login">
+                    <ProfileIcon />
+                  </NavLink>
                 )}
               </div>
-            ) : (
-              <NavLink to="/login">
-                <ProfileIcon />
-              </NavLink>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="flex gap-3 items-center">
+              <Link
+                to="/login"
+                className="bg-blue-500 text-white font-semibold text-sm py-1 px-3 rounded"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-blue-500 font-semibold text-sm rounded"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       </header>
       {modelOpen && (
@@ -223,11 +249,33 @@ const Header = () => {
               <div className="border-b-2 py-2 text-center">Create Post</div>
               <div className="max-w-[422px] w-full h-full aspect-square flex items-center justify-center">
                 <div className="flex flex-col w-full overflow-hidden items-center justify-between gap-4">
-                  {image ? (
-                    <img
-                      src={URL.createObjectURL(image)}
-                      className="max-h-[300px] w-auto object-cover"
-                    />
+                  {images ? (
+                    <>
+                      {images.length === 1 ? (
+                        <img
+                          src={URL.createObjectURL(images[0])}
+                          className="max-h-[300px] w-auto object-cover"
+                          alt=""
+                        />
+                      ) : (
+                        <div className="relative">
+                          <div className="flex gap-3 overflow-x-scroll snap-x ">
+                            {Array.from(images)?.map((media, index) => (
+                              <div
+                                key={index}
+                                className="flex-shrink-0 h-full w-full snap-center"
+                              >
+                                <img
+                                  src={URL.createObjectURL(media)}
+                                  className="border"
+                                  alt=""
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <svg
                       aria-label="Icon to represent media such as images or videos"
@@ -256,7 +304,7 @@ const Header = () => {
                   )}
                   <div className="flex justify-center w-full">
                     <div className="mb-3 w-full px-2">
-                      {!image && (
+                      {!images && (
                         <label
                           htmlFor="formFile"
                           className="text-2xl text-center block w-full mb-2 text-gray-700"
@@ -278,12 +326,13 @@ const Header = () => {
                             type="file"
                             accept="image/*"
                             id="formFile"
+                            // multiple
                             onChange={(e) => {
-                              setImage(e.target.files[0]);
+                              setImages(e.target.files);
                             }}
                           />
                         )}
-                        {image && (
+                        {images && (
                           <>
                             <input
                               type="text"

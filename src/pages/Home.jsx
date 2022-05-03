@@ -47,7 +47,10 @@ const Home = () => {
   }, [limitNum]);
   useEffect(() => {
     const suggestUsers = async () => {
-      const q = query(collection(firestore, "user"));
+      const q = query(
+        collection(firestore, "user"),
+        orderBy("lastLogin", "desc")
+      );
       onSnapshot(q, (snapshot) => {
         const users = snapshot.docs?.map((doc) => ({
           ...doc.data(),
@@ -81,7 +84,6 @@ const Home = () => {
               <div className="text-center">No posts yet</div>
             </div>
           )}
-          {/* beautiful button */}
           <div className="flex justify-center mt-8">
             <button
               onClick={() => setLimitNum(limitNum + 9)}
@@ -120,7 +122,7 @@ const Home = () => {
             </div>
           </div>
           <div>
-            {FakeUsers?.slice(1, 10).map((item, index) => (
+            {suggestUsers?.slice(1, 10).map((item, index) => (
               <div
                 className="flex items-center  justify-between my-2"
                 key={index}
@@ -140,7 +142,7 @@ const Home = () => {
                     >
                       {item?.username}
                     </Link>
-                    <p className="text-[10px] text-gray-500">{item.name}</p>
+                    <p className="text-[10px] text-gray-500">{item.fullName}</p>
                   </div>
                 </div>
                 <Link

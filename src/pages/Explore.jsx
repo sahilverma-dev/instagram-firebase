@@ -1,4 +1,11 @@
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { firestore } from "../firebase/config";
@@ -9,21 +16,27 @@ import Loading from "../components/Loading";
 
 const Explore = () => {
   const [posts, setposts] = useState([]);
+  const [limitNum, setLimitNum] = useState(9);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const getData = async () => {
-      setLoading(true);
-      const res = await getDocs(collection(firestore, "posts"));
-      const posts = res?.docs?.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
-      //   console.log(posts);
-      setposts(posts);
-      setLoading(false);
+      const q = query(
+        collection(firestore, "posts"),
+        orderBy("createdAt", "desc"),
+        limit(limitNum)
+      );
+      onSnapshot(q, (snapshot) => {
+        const posts = snapshot.docs?.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        setposts(posts);
+        setLoading(false);
+        // console.log(posts);
+      });
     };
-    getData();
-  }, []);
+    return getData();
+  }, [limitNum]);
   return (
     <div>
       <Header />
@@ -55,7 +68,7 @@ const Explore = () => {
         )}
         <motion.div
           layout
-          className="grid grid-cols-3 md:gap-8 gap-0.5 md:p-2 p-0.5"
+          className="grid grid-cols-3 md:gap-5 gap-0.5 md:p-2 p-0.5"
         >
           {posts.map((post, index) => (
             <ProfilePostCard
@@ -66,6 +79,14 @@ const Explore = () => {
             />
           ))}
         </motion.div>
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => setLimitNum(limitNum + 9)}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Load More
+          </button>
+        </div>
       </div>
     </div>
   );

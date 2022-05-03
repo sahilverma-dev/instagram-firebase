@@ -21,6 +21,7 @@ import { FaHeart as HeartFillIcon } from "react-icons/fa";
 import { RiChat3Line as CommentIcon } from "react-icons/ri";
 import { FiSend as SendIcon } from "react-icons/fi";
 import { BsBookmark as TagIcon } from "react-icons/bs";
+import { BsBookmarkFill as TagFillIcon } from "react-icons/bs";
 import { IoEllipsisHorizontalSharp as PostMenuIcon } from "react-icons/io5";
 import { AiOutlineSmile as SmileIcon } from "react-icons/ai";
 import { GoChevronRight as NextIcon } from "react-icons/go";
@@ -31,13 +32,12 @@ import {
   arrayRemove,
   collection,
   doc,
-  getDoc,
   limit,
-  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
-  setDoc,
+  updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { firestore } from "../firebase/config";
 import { AuthContext } from "../context/AuthContext";
@@ -47,15 +47,16 @@ const HomePostCard = ({ post }) => {
   const [commentsArr, setCommentsArr] = useState([]);
   const [limitNum, setLimitNum] = useState(2);
   const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
   const { user } = useContext(AuthContext);
   const swiper = useSwiper();
 
   const likePost = async () => {
     const postRef = doc(firestore, `posts/${post?.id}`);
-    setDoc(
+    updateDoc(
       postRef,
       {
-        likedBy: [user?.uid],
+        likedBy: arrayUnion(user?.uid),
       },
       { merge: true }
     );
@@ -64,7 +65,7 @@ const HomePostCard = ({ post }) => {
 
   const unlikePost = async () => {
     const postRef = doc(firestore, `posts/${post?.id}`);
-    setDoc(
+    updateDoc(
       postRef,
       {
         likedBy: arrayRemove(user?.uid),
@@ -74,6 +75,68 @@ const HomePostCard = ({ post }) => {
       }
     );
     setLiked(false);
+  };
+
+  const savePost = async () => {
+    console.log(user.uid, post.id);
+    const userRef = doc(firestore, `user/${user.uid}`);
+    const postRef = doc(firestore, `posts/${post.id}`);
+    updateDoc(
+      postRef,
+      {
+        savedBy: arrayUnion(user.uid),
+      },
+      { merge: true }
+    );
+    updateDoc(
+      userRef,
+      {
+        savedPost: arrayUnion(post?.id),
+      },
+      { merge: true }
+    );
+    setSaved(true);
+  };
+
+  const unsavePost = async () => {
+    const userRef = doc(firestore, `user/${user.uid}`);
+    const postRef = doc(firestore, `posts/${post.id}`);
+    updateDoc(
+      postRef,
+      {
+        savedBy: arrayRemove(user.uid),
+      },
+      { merge: true }
+    );
+    updateDoc(
+      userRef,
+      {
+        savedPost: arrayRemove(post?.id),
+      },
+      { merge: true }
+    );
+    setSaved(false);
+  };
+
+  const commentSubmit = (e) => {
+    e.preventDefault();
+    // console.log(post?.id, post);
+    const commentsCollectionRef = collection(
+      firestore,
+      `posts/${post?.id}/commentsCollection`
+    );
+    const commentData = {
+      userId: user?.uid,
+      comment: commentInput.trim(),
+      commentedAt: serverTimestamp(),
+      username: user?.username,
+      isVerified: user?.isVerified,
+      fullName: user?.displayName,
+      photoURL: user?.photoURL,
+      likes: 0,
+    };
+    addDoc(commentsCollectionRef, commentData);
+    setCommentInput("");
   };
 
   useEffect(() => {
@@ -93,6 +156,7 @@ const HomePostCard = ({ post }) => {
           }));
           // console.log(comments);
           setLiked(post?.likedBy?.includes(user?.uid));
+          setSaved(post?.savedBy?.includes(user?.uid));
           setCommentsArr(comments);
         },
         (err) => {
@@ -102,27 +166,6 @@ const HomePostCard = ({ post }) => {
     };
     getComments();
   }, [limitNum]);
-
-  const commentSubmit = (e) => {
-    e.preventDefault();
-    console.log(post?.id, post);
-    const commentsCollectionRef = collection(
-      firestore,
-      `posts/${post?.id}/commentsCollection`
-    );
-    const commentData = {
-      userId: user?.uid,
-      comment: commentInput.trim(),
-      commentedAt: serverTimestamp(),
-      username: user?.username,
-      isVerified: true,
-      fullName: user?.displayName,
-      photoURL: user?.photoURL,
-      likes: 0,
-    };
-    addDoc(commentsCollectionRef, commentData);
-    setCommentInput("");
-  };
 
   return (
     <div
@@ -153,7 +196,7 @@ const HomePostCard = ({ post }) => {
       </div>
       <Link to={`/p/${post?.id}`}>
         {!post?.carouselMedia && (
-          <div className="relative">
+          <div className="relative aspect-square">
             <LazyLoadImage
               // effect="blur"
               src={post?.singleMedia?.src || post?.carouselMedia[0]?.src}
@@ -166,7 +209,6 @@ const HomePostCard = ({ post }) => {
         {post?.carouselMedia && (
           <div className="relative">
             <Swiper
-              pagination={true}
               navigation
               pagination={{ clickable: true }}
               scrollbar={{ draggable: true }}
@@ -219,14 +261,24 @@ const HomePostCard = ({ post }) => {
               <SendIcon />
             </button>
           </div>
-          <button>
-            <TagIcon />
+          <button onClick={saved ? unsavePost : savePost}>
+            {saved ? <TagFillIcon /> : <TagIcon />}
           </button>
         </div>
         <div className="text-sm font-semibold">
           {post?.likedBy?.length > 0 && (
             <>{post?.likedBy?.length?.toLocaleString()} likes</>
           )}
+          <div className="my-2">
+            {post?.caption && (
+              <div className="text-sm text-gray-700">
+                <Link to={`/${post.user.username}`} className="font-bold">
+                  {post?.user?.username}
+                </Link>{" "}
+                {post?.caption}
+              </div>
+            )}
+          </div>
           {commentsArr?.length > 0 && (
             <div
               onClick={() => setLimitNum(limitNum + 5)}
@@ -237,23 +289,24 @@ const HomePostCard = ({ post }) => {
           )}
         </div>
         <div className="flex flex-col gap-3" id="#comments">
-          {commentsArr?.map((comment, index) => (
+          {commentsArr?.map((comment) => (
+            // console.log(comment),
             <div key={comment?.id} className="flex justify-between gap-2">
               <div>
-                <img
-                  src={
-                    comment?.photoURL ||
-                    "https://parkridgevet.com.au/wp-content/uploads/2020/11/Profile-300x300.png"
-                  }
-                  className="h-8 w-8 rounded-full aspect-square object-fill"
-                  alt={comment?.fullName}
-                />
+                <Link to={`/${comment?.username}`}>
+                  <img
+                    src={
+                      comment?.photoURL ||
+                      "https://parkridgevet.com.au/wp-content/uploads/2020/11/Profile-300x300.png"
+                    }
+                    className="h-8 w-8 rounded-full aspect-square object-fill"
+                    alt={comment?.fullName}
+                  />
+                </Link>
               </div>
               <div className="flex flex-grow gap-1">
                 <b className="inline-flex">
-                  <Link to={`/${comment?.user?.username}`}>
-                    {comment?.username}
-                  </Link>
+                  <Link to={`/${comment?.username}`}>{comment?.username}</Link>
                   {comment?.isVerified && (
                     <span className="aspect-square rounded-full text-blue-500">
                       <VerifiedIcon />

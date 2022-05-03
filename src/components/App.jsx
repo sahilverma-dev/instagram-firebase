@@ -36,7 +36,14 @@ const App = () => {
               </RequireAuth>
             }
           />
-          <Route path="/explore" element={<Explore />} />
+          <Route
+            path="/explore"
+            element={
+              <RequireAuth>
+                <Explore />
+              </RequireAuth>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/p/:id" element={<Post />} />
           <Route path="/:username" element={<Profile />} />

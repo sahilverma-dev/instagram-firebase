@@ -27,11 +27,11 @@ const Post = () => {
       }
     };
     getPost();
-  }, []);
+  }, [postId]);
   return (
     <div>
       <Header />
-      <div className="mt-14 mx-auto h-screen max-w-4xl p-3">
+      <div className="mt-14 mx-auto h-screen max-w-4xl p-1">
         {loading ? (
           <Loading />
         ) : (

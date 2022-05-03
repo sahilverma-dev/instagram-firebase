@@ -29,6 +29,7 @@ const AuthProvider = ({ children }) => {
             displayName: userRef.data()?.fullName || null,
             photoURL: userRef.data()?.photoURL || null,
             username: userRef.data().username || null,
+            isVerified: userRef.data().isVerified || false,
           });
           setLoading(false);
         }
