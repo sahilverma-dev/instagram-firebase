@@ -1,6 +1,6 @@
 # Instagram Firebase
 
-An Instgram Clone made up with React JS and Firebase 9.
+An Instagram Clone made up of React JS and Firebase 9.
 
 ## Live Website
 
