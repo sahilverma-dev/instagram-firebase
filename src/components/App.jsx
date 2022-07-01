@@ -17,6 +17,7 @@ import Login from "../pages/Login";
 import Profile from "../pages/Profile";
 import Register from "../pages/Register";
 import Post from "../pages/Post";
+import Reels from "../pages/Reels";
 
 const RequireAuth = ({ children }) => {
   const { user } = useContext(AuthContext);
@@ -41,6 +42,14 @@ const App = () => {
             element={
               <RequireAuth>
                 <Explore />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/reels"
+            element={
+              <RequireAuth>
+                <Reels />
               </RequireAuth>
             }
           />

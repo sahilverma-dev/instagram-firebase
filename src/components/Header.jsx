@@ -37,6 +37,7 @@ import {
 import { signOut } from "firebase/auth";
 import Swiper, { Pagination } from "swiper";
 import { SwiperSlide } from "swiper/react";
+import { ReelFillIcon, ReelIcon } from "../constants/icons";
 
 const Header = () => {
   const { user, logout } = useContext(AuthContext);
@@ -140,9 +141,9 @@ const Header = () => {
                 <NavLink to="/explore">
                   <ExploreIcon size={20} />
                 </NavLink>
-                <div>
-                  <HeartIcon />
-                </div>
+                <NavLink to="/reels">
+                  <ReelFillIcon size={22} />
+                </NavLink>
                 {user ? (
                   <div
                     className="relative cursor-pointer"

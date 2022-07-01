@@ -12,7 +12,11 @@ https://instagram-firebase.netlify.app/
 
 ## Explore
 
-![Explore](/screenshots//explore.png)
+![Explore](/screenshots/explore.png)
+
+## Reels
+
+![Reels](/screenshots/reels.png)
 
 ## Profile
 
